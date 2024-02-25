@@ -1,34 +1,45 @@
-const feedbackFormEl = document.querySelector('.feedback-form');
-const inputEl = document.querySelector('input');
-const textareaEl = document.querySelector('textarea');
-const localStorageKey = 'feedback-form-state';
+const emailInput = document.querySelector('input[name="email"]');
+const messageInput = document.querySelector('textarea[name="message"]');
+const form = document.querySelector('.feedback-form');
 
-feedbackFormEl.addEventListener('input', handleInput);
 
-function handleInput() {
-  const storedObj = {
-    email: feedbackFormEl.elements.email.value.trim(),
-    textarea: feedbackFormEl.elements.message.value.trim(),
-  };
-  localStorage.setItem(localStorageKey, JSON.stringify(storedObj));
-}
+const saveStateToLocalStorage = () => {
+    const state = {
+        email: emailInput.value.trim(),
+        message: messageInput.value.trim(),
+    };
+    localStorage.setItem('feedback-form-state', JSON.stringify(state));
+};
 
-window.addEventListener('DOMContentLoaded', () => {
-  const storedData = localStorage.getItem(localStorageKey);
-  if (storedData) {
-    const parsedData = JSON.parse(storedData);
-    inputEl.value = parsedData.email;
-    textareaEl.value = parsedData.message;
-  }
+
+const loadStateFromLocalStorage = () => {
+    const savedState = localStorage.getItem('feedback-form-state');
+    if (savedState) {
+        const { email, message } = JSON.parse(savedState);
+        emailInput.value = email || "";
+        messageInput.value = message || "";
+    }
+};
+
+form.addEventListener('input', (event) => {
+    if (event.target === emailInput || event.target === messageInput)
+        saveStateToLocalStorage();
+});
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const emailValue = emailInput.value.trim();
+    const messageValue = messageInput.value.trim();
+    if (emailValue !== '' && messageValue !== '') {
+        console.log({
+            email: emailValue,
+            message: messageValue,
+        });
+        localStorage.removeItem('feedback-form-state');
+        emailInput.value = '';
+        messageInput.value = '';
+    } else {
+        alert('Both strings must be filled!');
+    }
 });
 
-feedbackFormEl.addEventListener('submit', handleSubmit);
-
-function handleSubmit(event) {
-  event.preventDefault();
-  if (inputEl.value !== '' && textareaEl.value !== '') {
-    console.log(JSON.parse(localStorage.getItem(localStorageKey)));
-  }
-  localStorage.removeItem(localStorageKey);
-  feedbackFormEl.reset();
-}
+loadStateFromLocalStorage();
